@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Empty Pre Tag</title>
+</head>
+<body>
+  <pre>
+    1. A simple program to print the IP address of the system
+
+PROGRAM
+import java.net.*;
+import java.io.*;
+class ipclient
+{
+public static void main(String args[])
+{
+try
+{
+InetAddress ia=InetAddress.getLocalHost();
+System.out.println("The client system address is: "+ia);
+}
+catch(IOException e)
+{
+System.out.println("The exception is: "+e);
+}
+}
+}
+
+2. T I M E A N D D A T E S E R V E R
+
+server
+
+import java.io.*; 
+import java.net.*; 
+import java.util.*; 
+class dateserver
+{
+public static void main(String args[])
+{
+ServerSocket ss; 
+Socket s;
+PrintStream ps; 
+DataInputStream dis; 
+String inet;
+try
+{
+ss=new ServerSocket(8020); 
+while(true)
+{
+s=ss.accept();
+ps=new PrintStream(s.getOutputStream()); 
+Date d=new Date();
+ps.println(d); 
+ps.close();
+}
+}
+catch(IOException e)
+{
+System.out.println("The exception is: "+e);
+} } }
+
+client
+
+import java.io.*; 
+import java.net.*; 
+class dateclient
+{
+public static void main(String args[])
+{
+Socket soc;
+DataInputStream dis;
+String sdate;
+PrintStream ps;
+try
+{
+InetAddress ia=InetAddress.getLocalHost(); 
+soc=new Socket(ia,8020);
+dis=new DataInputStream(soc.getInputStream()); 
+sdate=dis.readLine();
+System.out.println("The data in the server is: "+sdate);
+}
+catch(IOException e)
+{
+System.out.println("The exception is: "+e);
+}
+}
+}
+
+3. Echo UDP Server
+
+server
+
+import java.io.*;
+import java.net.*;
+public class UDPServer {
+ public static void main(String[] args) throws Exception 
+{
+ DatagramSocket serverSocket = new DatagramSocket(9876);
+ byte[] receiveBuffer = new byte[1024];
+ System.out.println("Server is running...");
+ while (true) 
+{
+ DatagramPacket receivePacket = new DatagramPacket(receiveBuffer, receiveBuffer.length);
+ serverSocket.receive(receivePacket);
+ String receivedMessage = new String(receivePacket.getData(), 0, receivePacket.getLength());
+ System.out.println("Received from client: " + receivedMessage);
+ InetAddress clientAddress = receivePacket.getAddress();
+ int clientPort = receivePacket.getPort();
+ String serverMessage = "Echo: " + receivedMessage;
+ byte[] sendBuffer = serverMessage.getBytes();
+ DatagramPacket sendPacket = new DatagramPacket(sendBuffer, sendBuffer.length, 
+clientAddress, clientPort);
+ serverSocket.send(sendPacket);
+ System.out.println("Sent to client: " + serverMessage);
+ }
+ }
+}
+
+client
+
+import java.io.*;
+import java.net.*;
+import java.util.*;
+public class UDPClient {
+ public static void main(String[] args) throws Exception {
+ DatagramSocket clientSocket = new DatagramSocket();
+ InetAddress serverAddress = InetAddress.getByName("localhost");
+ byte[] sendBuffer;
+ byte[] receiveBuffer = new byte[1024];
+ Scanner scanner = new Scanner(System.in);
+ System.out.println("Enter a message to send to the server:");
+ String message = scanner.nextLine();
+ sendBuffer = message.getBytes();
+ DatagramPacket sendPacket = new DatagramPacket(sendBuffer, sendBuffer.length, 
+serverAddress, 9876);
+ clientSocket.send(sendPacket);
+ System.out.println("Sent to server: " + message);
+ DatagramPacket receivePacket = new DatagramPacket(receiveBuffer, receiveBuffer.length);
+ clientSocket.receive(receivePacket);
+ String serverMessage = new String(receivePacket.getData(), 0, receivePacket.getLength());
+ System.out.println("Received from server: " + serverMessage);
+ clientSocket.close();
+ scanner.close();
+ }
+}
+
+4a) TCP Sockets - Echo Client & Server
+
+server
+
+import java.io.*;
+import java.net.*;
+class echoserver
+{
+public static void main(String args[]) throws Exception
+{
+String str;
+ServerSocket ss;
+Socket s;
+BufferedReader br;
+try
+{
+ss = new ServerSocket(2000);
+s = ss.accept();
+br = new BufferedReader (new InputStreamReader(s.getInputStream()));
+PrintStream ps = new PrintStream(s.getOutputStream());
+System.out.println("Connected for echo:");
+while((str=br.readLine())!=null)
+{
+if(str.equals("end"))
+{
+System.out.println("Client disconnected");
+br.close();
+break;
+}
+else
+ps.println(str);
+}
+}
+catch(UnknownHostException e)
+{
+System.out.println(e.toString());
+}
+catch(IOException ioe)
+{
+System.out.println(ioe);
+}
+} 
+}
+
+client
+
+import java.io.*;
+import java.net.*;
+class echoclient
+{
+public static void main(String args[]) throws Exception 
+{
+String str;
+try
+{
+Socket cs = new Socket(InetAddress.getLocalHost(),2000);
+BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+BufferedReader br_sock = new BufferedReader(new 
+InputStreamReader(cs.getInputStream()));
+PrintStream ps = new PrintStream(cs.getOutputStream());
+System.out.println("Start echoing... type 'end' to terminate");
+while((str=br.readLine())!=null)
+{
+ps.println(str);
+if(str.equals("end"))
+break;
+else
+System.out.println("echoed from server:"+br_sock.readLine());
+}
+}
+catch(UnknownHostException e)
+{
+System.out.println(e.toString());
+}
+catch(IOException ioe)
+{
+System.out.println(ioe);
+}
+}
+}
+
+4.b. TCP Socket – Chat
+
+server
+
+import java.net.*;
+import java.io.*;
+
+public class ChatServer {
+    public static void main(String[] args) throws Exception {
+        // Create a server socket that listens on port 2000
+        ServerSocket ss = new ServerSocket(2000);
+        System.out.println("Server started. Waiting for a client...");
+
+        // Accept incoming client connection
+        Socket sk = ss.accept();
+        System.out.println("Client connected.");
+
+        // Set up input and output streams
+        BufferedReader cin = new BufferedReader(new InputStreamReader(sk.getInputStream()));
+        PrintStream cout = new PrintStream(sk.getOutputStream());
+        BufferedReader stdin = new BufferedReader(new InputStreamReader(System.in));
+
+        String s;
+        while (true) {
+            // Read message from client
+            s = cin.readLine();
+            if (s.equalsIgnoreCase("END")) {
+                cout.println("BYE");
+                System.out.println("Connection ended by client.");
+                break;
+            }
+            System.out.println("Client: " + s);
+
+            // Send response to client
+            System.out.print("Server: ");
+            s = stdin.readLine();
+            cout.println(s);
+        }
+
+        // Close resources
+        ss.close();
+        sk.close();
+        cin.close();
+        cout.close();
+        stdin.close();
+    }
+}
+
+client
+
+import java.io.*;
+import java.net.*;
+
+public class ChatClient {
+    public static void main(String[] args) throws Exception {
+        // Create a socket to connect to the server on localhost at port 2000
+        Socket sk = new Socket(InetAddress.getLocalHost(), 2000);
+
+        // Set up input and output streams
+        BufferedReader sin = new BufferedReader(new InputStreamReader(sk.getInputStream()));
+        PrintStream sout = new PrintStream(sk.getOutputStream());
+        BufferedReader stdin = new BufferedReader(new InputStreamReader(System.in));
+
+        String s;
+
+        while (true) {
+            // Send message to the server
+            System.out.print("Client: ");
+            s = stdin.readLine();
+            sout.println(s);
+
+            // Read response from the server
+            s = sin.readLine();
+            System.out.println("Server: " + s);
+
+            // If the server says "BYE", end the connection
+            if (s.equalsIgnoreCase("BYE")) {
+                break;
+            }
+        }
+
+        // Close resources
+        sk.close();
+        sin.close();
+        sout.close();
+        stdin.close();
+    }
+}
+
+4C. TCP socket – File Transfer
+
+server
+
+import java.io.*;
+import java.net.*;
+
+public class FTPServer {
+    public static void main(String[] args) throws Exception {
+        // Establishing the connection with the server
+        ServerSocket ss = new ServerSocket(4000);
+        System.out.println("Server ready for connection...");
+
+        // Accepting client connection
+        Socket s = ss.accept();
+        System.out.println("Connection is successful and waiting for file transfer...");
+
+        // Reading the file name from client
+        InputStream istream = s.getInputStream();
+        BufferedReader fileRead = new BufferedReader(new InputStreamReader(istream));
+        String fname = fileRead.readLine(); // Reading the filename
+
+        // Reading the file contents
+        BufferedReader contentRead = new BufferedReader(new FileReader(fname));
+
+        // Preparing output stream to send file contents to client
+        OutputStream ostream = s.getOutputStream();
+        PrintWriter pwrite = new PrintWriter(ostream, true);
+
+        String str;
+        // Sending file content line by line
+        while ((str = contentRead.readLine()) != null) {
+            pwrite.println(str); // Sending each line to the client
+        }
+
+        // Closing all resources
+        System.out.println("File transfer completed. Closing connection...");
+        s.close();
+        ss.close();
+        pwrite.close();
+        fileRead.close();
+        contentRead.close();
+    }
+}
+
+client
+
+import java.net.*;
+import java.io.*;
+
+public class FTPClient {
+    public static void main(String[] args) throws Exception {
+        // Establishing connection to the server
+        Socket s = new Socket(InetAddress.getLocalHost(), 4000);
+
+        // Reading the file name from keyboard
+        System.out.println("Enter the file name:");
+        BufferedReader keyRead = new BufferedReader(new InputStreamReader(System.in));
+        String fname = keyRead.readLine();
+
+        // Sending the filename to the server
+        OutputStream ostream = s.getOutputStream();
+        PrintWriter pwrite = new PrintWriter(ostream, true);
+        pwrite.println(fname);
+
+        // Receiving the contents from the server
+        InputStream istream = s.getInputStream();
+        BufferedReader socketRead = new BufferedReader(new InputStreamReader(istream));
+
+        // Reading and printing file contents line-by-line
+        String str;
+        while ((str = socketRead.readLine()) != null) {
+            System.out.println(str);
+        }
+
+        // Closing all resources
+        pwrite.close();
+        socketRead.close();
+        keyRead.close();
+        s.close();
+    }
+}
+
+Ex 5 DAEMON PROGRAM
+
+// Java program to demonstrate the usage of
+// setDaemon() and isDaemon() method.
+public class DaemonThread extends Thread
+{
+public DaemonThread(String name){
+super(name);
+}
+public void run()
+{
+// Checking whether the thread is Daemon or not
+if(Thread.currentThread().isDaemon())
+{
+}
+else
+{
+}
+}
+System.out.println(getName() + " is Daemon thread");
+System.out.println(getName() + " is User thread");
+public static void main(String[] args)
+{
+DaemonThread t1 = new DaemonThread("t1");
+DaemonThread t2 = new DaemonThread("t2");
+DaemonThread t3 = new DaemonThread("t3");
+// Setting user thread t1 to Daemon
+t1.setDaemon(true);
+// starting first 2 threads
+t1.start();
+t2.start();
+// Setting user thread t3 to Daemon
+t3.setDaemon(true);
+t3.start();
+}
+}
+
+ex9.RPC(remote procedure cell)
+
+calucator.java
+
+import java.rmi.Remote;
+import java.rmi.RemoteException;
+
+public interface Calculator extends Remote {
+    // Method for addition
+    public int add(int a, int b) throws RemoteException;
+
+    // Method for subtraction
+    public int sub(int a, int b) throws RemoteException;
+
+    // Method for multiplication
+    public int mul(int a, int b) throws RemoteException;
+
+    // Method for division
+    public int div(int a, int b) throws RemoteException;
+}
+
+calucatormpl.java
+
+import java.rmi.server.UnicastRemoteObject;
+import java.rmi.RemoteException;
+
+// Server-side implementation of the Calculator interface
+public class CalculatorImpl extends UnicastRemoteObject implements Calculator {
+
+    // Constructor
+    protected CalculatorImpl() throws RemoteException {
+        super();
+    }
+
+    // Method for addition
+    public int add(int a, int b) throws RemoteException {
+        return a + b;
+    }
+
+    // Method for subtraction
+    public int sub(int a, int b) throws RemoteException {
+        return a - b;
+    }
+
+    // Method for multiplication
+    public int mul(int a, int b) throws RemoteException {
+        return a * b;
+    }
+
+    // Method for division
+    public int div(int a, int b) throws RemoteException {
+        if (b == 0) {
+            throw new ArithmeticException("Cannot divide by zero.");
+        }
+        return a / b;
+    }
+}
+
+calculator server.java
+
+import java.rmi.Naming;
+import java.rmi.registry.LocateRegistry;
+
+public class CalculatorServer {
+    public static void main(String[] args) {
+        try {
+            // Create an instance of the CalculatorImpl
+            Calculator calc = new CalculatorImpl();
+
+            // Start RMI registry on port 1099
+            LocateRegistry.createRegistry(1099);
+
+            // Bind the remote object to the registry
+            Naming.rebind("rmi://localhost/CalculatorService", calc);
+
+            System.out.println("Calculator Service is ready.");
+        } catch (Exception e) {
+            System.out.println("Server failed: " + e);
+        }
+    }
+}
+
+calucator client
+
+import java.rmi.Naming;
+
+public class CalculatorClient {
+    public static void main(String[] args) {
+        try {
+            // Lookup the remote object from the RMI registry
+            Calculator calc = (Calculator) Naming.lookup("rmi://localhost/CalculatorService");
+
+            // Perform operations
+            System.out.println("Addition (5 + 3): " + calc.add(5, 3));
+            System.out.println("Subtraction (5 - 3): " + calc.sub(5, 3));
+            System.out.println("Multiplication (5 * 3): " + calc.mul(5, 3));
+            System.out.println("Division (6 / 3): " + calc.div(6, 3));
+        } catch (Exception e) {
+            System.out.println("Client failed: " + e);
+        }
+    }
+}
+  </pre>
+</body>
+</html>
